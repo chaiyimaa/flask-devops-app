@@ -22,3 +22,5 @@ jobs:
       - name: Run tests inside container
         run: |
           docker run flask-devops-app pytest tests/
+env:
+  RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
