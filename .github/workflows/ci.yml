@@ -1,16 +1,15 @@
-name: CI Pipeline
+name: CI + Deploy to Railway
 
 on:
   push:
     branches: [main]
-  pull_request:
 
 jobs:
-  build_and_test:
+  build_test_deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
@@ -19,9 +18,15 @@ jobs:
       - name: Build Docker image
         run: docker build -t flask-devops-app .
 
-      - name: Run tests inside container
+      - name: Run tests
+        run: docker run flask-devops-app pytest tests/
+
+      - name: Install Railway CLI
         run: |
-          docker run flask-devops-app pytest tests/
-	env:
-  	  RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
-	run: railway up --detach
+          curl -sL https://railway.app/install.sh | sh
+          echo "$RAILWAY_API_KEY" > ~/.railway/token
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
+        run: railway up --detach
